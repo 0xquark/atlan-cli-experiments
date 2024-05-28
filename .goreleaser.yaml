@@ -39,7 +39,6 @@ archives:
         format: zip
 
 changelog:
-  use: github
   sort: asc
   filters:
     exclude:
@@ -47,4 +46,4 @@ changelog:
       - "^test:"
 
 release:
-  name_template: "{{.ProjectName}}-v{{.Version}}"
+  name_template: "Atlan CLI v{{.Version}}"
