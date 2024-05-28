@@ -1,30 +1,53 @@
-# This workflow creates a specific versioned binary during a GitHub release:
-name: GoReleaser
+name: Create Tag and Release
 
 on:
   push:
-    tags:
-      - "*"
-
-permissions:
-  contents: write
+    branches:
+      - main
+    paths:
+      - 'version.txt'
 
 jobs:
-  goreleaser:
+  create-tag:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: stable
+      - name: Read version from file
+        id: read_version
+        run: echo "VERSION=$(cat version.txt)" >> $GITHUB_ENV
+
+      - name: Get latest tag
+        id: latest_tag
+        run: echo "LATEST_TAG=$(git describe --tags `git rev-list --tags --max-count=1`)" >> $GITHUB_ENV
+
+      - name: Check if version is latest tag
+        id: check_version
+        run: |
+          if [[ "${{ env.VERSION }}" != "${{ env.LATEST_TAG }}" ]]; then
+            echo "TAG_EXISTS=false" >> $GITHUB_ENV
+          else
+            echo "TAG_EXISTS=true" >> $GITHUB_ENV
+          fi
+
+      - name: Create tag
+        id: create_tag
+        if: ${{ env.TAG_EXISTS }} == 'false'
+        run: |
+          git config --global user.name 'GitHub Actions'
+          git config --global user.email 'actions@github.com'
+          git tag -a "${{ env.VERSION }}" -m "Version ${{ env.VERSION }}"
+          git push origin "${{ env.VERSION }}"
+          echo "RELEASE_TAG=${{ env.VERSION }}" >> $GITHUB_ENV
+
+      - name: Set Release Tag
+        if: steps.create_tag.outputs.RELEASE_TAG
+        run: echo "RELEASE_TAG=${{ steps.create_tag.outputs.RELEASE_TAG }}" >> $GITHUB_ENV
 
       - name: Run GoReleaser
+        if: ${{ env.TAG_EXISTS }} == 'false'
         uses: goreleaser/goreleaser-action@v5
         with:
           distribution: goreleaser
