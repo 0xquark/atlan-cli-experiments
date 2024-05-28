@@ -1,16 +1,14 @@
-# This workflow creates a specific versioned binary during a GitHub release:
-name: GoReleaser
+# This workflow creates a nightly build each time a PR is merged to the main branch:
+
+name: Nightly Build
 
 on:
   push:
-    tags:
-      - "*"
-
-permissions:
-  contents: write
+    branches:
+      - main
 
 jobs:
-  goreleaser:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -29,6 +27,6 @@ jobs:
         with:
           distribution: goreleaser
           version: latest
-          args: release --clean
+          args: release --snapshot --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
