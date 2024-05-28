@@ -39,8 +39,24 @@ archives:
         format: zip
 
 changelog:
+  exclude:
+    labels:
+      - ignore-for-release
+    authors:
+      - octocat
+  categories:
+    - title: Changelog 🛠
+      labels:
+        - "*"
   sort: asc
   filters:
     exclude:
       - "^docs:"
       - "^test:"
+
+release:
+  github:
+    name_template: "Atlan CLI {{ .Tag }}"
+    draft: false
+    prerelease: false
+    generate_release_notes: true
