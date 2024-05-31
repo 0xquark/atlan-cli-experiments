@@ -66,3 +66,4 @@ jobs:
           generate_release_notes: true
           make_latest: true
           body: ${{ steps.generate-notes.outputs.notes }}
+          tag_name: ${{ steps.next-tag.outputs.tag }}
